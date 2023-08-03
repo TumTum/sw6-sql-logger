@@ -20,6 +20,32 @@ $result = $this->productRepository->search($criteria, Context::createDefaultCont
 \StopSQLLog();
 ```
 
+## Usage with VarDumper::dump()
+
+If you want to dump the SQLs into the `VarDumper::dump()` and put out the result into  a HTML file, you can use the following step:
+
+Configure the Shopware 6 (one time):
+
+```yaml
+# config/packages/dev/debug.yml
+debug:
+    dump_destination: tcp://%env(VAR_DUMPER_SERVER)%
+```
+
+Start the VarDumper server:
+
+```shell
+./bin/console server:dump --format html > ./public/debug.html
+```
+
+open in Browser: http://local-shopware:8000/debug.html
+
+Start the SQL logger:
+
+```php
+\StartSQLLog(useVarDumper: true);
+```
+
 ## Screenshots
 
 CLI:

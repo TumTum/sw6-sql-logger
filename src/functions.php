@@ -5,8 +5,8 @@
  * Time: 23:11
  */
 
-function StartSQLLog() {
-    \tm\sw6\sql\logger\ShopwareConnectionConfiguration::enableLogger();
+function StartSQLLog(bool $useVarDumper = false) {
+    \tm\sw6\sql\logger\ShopwareConnectionConfiguration::enableLogger(compact('useVarDumper'));
 }
 
 function StopSQLLog() {

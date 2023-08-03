@@ -19,7 +19,7 @@ class ShopwareConnectionConfiguration
 {
     private static $backUplogger = null;
 
-    public static function enableLogger()
+    public static function enableLogger(array $options): void
     {
         $configuration = \Shopware\Production\Kernel::getConnection()->getConfiguration();
 
@@ -28,11 +28,11 @@ class ShopwareConnectionConfiguration
         }
 
         $configuration->setSQLLogger(
-            new ShopwareDalSQLLogger()
+            new ShopwareDalSQLLogger($options)
         );
     }
 
-    public static function disableLogger()
+    public static function disableLogger(): void
     {
         \Shopware\Production\Kernel::getConnection()->getConfiguration()->setSQLLogger(
             self::$backUplogger

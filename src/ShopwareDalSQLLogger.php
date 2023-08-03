@@ -9,6 +9,7 @@ namespace tm\sw6\sql\logger;
 
 use Doctrine\DBAL\Logging\SQLLogger;
 use Monolog;
+use Symfony\Component\VarDumper\VarDumper;
 
 /**
  * Class OxidSQLLogger
@@ -21,14 +22,18 @@ class ShopwareDalSQLLogger implements SQLLogger
      */
     private $SQLQuery = null;
 
+    private $useVarDumper = false;
+
     /**
      * @inheritDoc
      */
-    public function __construct()
+    public function __construct(array $options)
     {
         if (!Monolog\Registry::hasLogger('sql')) {
             Monolog\Registry::addLogger((new LoggerFactory())->create('sql'));
         }
+
+        $this->useVarDumper = $options['useVarDumper'] ?? false;
     }
 
     /**
@@ -42,7 +47,7 @@ class ShopwareDalSQLLogger implements SQLLogger
         }
 
         $this->SQLQuery = (new SQLQuery()) ->setSql($sql)
-                                            ->setParams($params)
+                                            ->setParams(ShopwareParams::encode($params))
                                             ->setTypes($types);
     }
 
@@ -52,14 +57,24 @@ class ShopwareDalSQLLogger implements SQLLogger
     public function stopQuery()
     {
         if ($this->SQLQuery) {
-            Monolog\Registry::sql()->debug(
-                '['.$this->SQLQuery->getReadableElapsedTime().'] ' . $this->SQLQuery->getSql(),
-                [
-                    'params' => $this->SQLQuery->getParams(),
-                    'time' => $this->SQLQuery->getElapsedTime(),
-                    'types' => $this->SQLQuery->getTypes(),
-                ]
-            );
+            $msg = ['[' . $this->SQLQuery->getReadableElapsedTime() . ']', $this->SQLQuery->getSql()];
+            $data = [
+                'params' => $this->SQLQuery->getParams(),
+                'time' => $this->SQLQuery->getElapsedTime(),
+                'types' => $this->SQLQuery->getTypes(),
+            ];
+
+            if ($this->useVarDumper) {
+                VarDumper::dump([
+                    ...[$msg[0] => $msg[1]],
+                    ...$data
+                ]);
+            } else {
+                Monolog\Registry::sql()->debug(
+                    implode(' ', $msg),
+                    $data
+                );
+            }
         }
 
         $this->SQLQuery = null;
