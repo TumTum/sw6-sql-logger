@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Support for dumping with [myray.app](https://myray.app).
+
+### Changed
+- Now only compatible with Shopware ^6.6.5.
+- Now requires PHP ^8.0.
+
 ## [v1.1.0] - 2023-08-03
 
 ### Fixed

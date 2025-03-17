@@ -7,6 +7,7 @@
 
 namespace tm\sw6\sql\logger;
 
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Logging\EchoSQLLogger;
 
 /**
@@ -17,11 +18,17 @@ use Doctrine\DBAL\Logging\EchoSQLLogger;
  */
 class ShopwareConnectionConfiguration
 {
-    private static $backUplogger = null;
+    private static mixed $backUplogger = null;
 
     public static function enableLogger(array $options): void
     {
-        $configuration = \Shopware\Production\Kernel::getConnection()->getConfiguration();
+        $connection = self::getDoctrineConnection();
+
+        if ($connection === null) {
+            return;
+        }
+
+        $configuration = $connection->getConfiguration();
 
         if ($configuration->getSQLLogger() && ! $configuration->getSQLLogger() instanceof ShopwareDalSQLLogger) {
             self::$backUplogger = $configuration->getSQLLogger();
@@ -34,8 +41,28 @@ class ShopwareConnectionConfiguration
 
     public static function disableLogger(): void
     {
-        \Shopware\Production\Kernel::getConnection()->getConfiguration()->setSQLLogger(
+        $connection = self::getDoctrineConnection();
+
+        if ($connection === null) {
+            return;
+        }
+
+        $connection->getConfiguration()->setSQLLogger(
             self::$backUplogger
         );
+
+        self::$backUplogger = null;
+    }
+
+    private static function getDoctrineConnection(): Connection|null
+    {
+        /** @var \Shopware\Core\Kernel|null $app */
+        global $app;
+
+        if (method_exists($app, 'getKernel')) {
+            return $app->getKernel()->getConnection();
+        }
+
+        return $app?->getConnection();
     }
 }

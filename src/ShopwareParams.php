@@ -8,9 +8,9 @@ use Shopware\Core\Framework\Uuid\Uuid;
 
 class ShopwareParams
 {
-    public static function encode(array $params): array
+    public static function encode(?array $params): array
     {
-        return array_map([self::class, 'lockup'], $params);
+        return array_map([self::class, 'lockup'], $params ?? []);
     }
 
     private static function lockup(mixed $data): mixed
